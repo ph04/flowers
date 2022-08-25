@@ -1,7 +1,7 @@
 from random import random
 from PIL import Image
 import utils
-
+import flower
 
 
 
@@ -14,7 +14,7 @@ def main():
 
 
 def generate_images():
-    background = Image.open("assets/BG_test.png")
+    background = Image.open("assets/BG2.png")
     
     flower_list = create_starting_flower()
 
@@ -28,20 +28,23 @@ def generate_images():
 
 def create_starting_flower():
     drowable_areas = utils.compute_drowable_areas()
-    n_flawer = 4
+    n_flower = 2
     flower_list=[]
     
     for area in drowable_areas:
-        area_flower_list=[]    
-        for _ in range(n_flawer):
-            area_flower_list.append(utils.random_flower(area,area_flower_list))
-        flower_list.extend(area_flower_list)
+        new_flowers = []
+
+        utils.generate_flowers(area, n_flower, new_flowers)
+        print(True)
+        flower_list.append(new_flowers)
         
     return flower_list
 
 def drow_flowers(background,flower_list):
-    for flower in flower_list:
-        utils.paste_image(flower.image,background,flower.position)
+    for area in flower_list:
+        for flower in area:
+            utils.paste_image(flower.image,background,flower.position)
+        
         
 
 

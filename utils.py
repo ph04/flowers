@@ -4,6 +4,7 @@ from os import remove
 from glob import glob
 import random
 import ffmpeg
+import math
 
 from flower import Flower
 
@@ -16,7 +17,7 @@ def resize_new_image(image, new_width, new_height):
     return new_image
 
 def paste_image(upper_image, lower_image, position):
-    lower_image.paste(upper_image, position,upper_image)
+    lower_image.paste(upper_image, position,  upper_image)
 
 def paste_new_image(upper_image, lower_image, position):
     new_lower_image = deepcopy(lower_image)
@@ -68,26 +69,54 @@ def drowable_areas_new_image(image):
 
 def compute_drowable_areas():
     return [((zone[0][0]+BORDER_WIDTH,zone[0][1]+BORDER_WIDTH),(zone[1][0]-BORDER_WIDTH,zone[1][1]-BORDER_WIDTH)) for zone in IMAGE_ZONES]
-        
-def random_flower(area,other_flowers)-> Flower:
+
+
     
-    min_max_dimension=(80,160)
+def generate_flowers(area,n_flowers,new_flowers):
+    if n_flowers == len(new_flowers):
+        return
+
+    new_flower = random_flower(area, new_flowers, n_flowers)
+
+    if new_flower == None:
+        new_flowers.pop()
+    else:
+        new_flowers.append(new_flower)
+
+    generate_flowers(area, n_flowers, new_flowers)
+
+def random_flower(area,other_flowers, n_flowers) -> Flower:
+    
+    min_max_dimension=(80,230)
     
     size = random.randint(min_max_dimension[0],min_max_dimension[1]) 
     
-
     coordinates=random_cordinates(area,size,other_flowers)
-    
-    image = random.choice(IMAGE_LIST)
-    
-    resize_image(image,size,size)
-    
-    return Flower(image,coordinates, size)
 
-def random_cordinates(area,size,other_flower):
+    if coordinates:
+        # for 
+        image = random.choice(IMAGE_LIST)
+        
+        n = 0
+
+        while True:
+            if all(map(lambda flower: flower != image, other_flowers)):
+                break
+            else:
+                image = random.choice(IMAGE_LIST)
+            
+            if n == n_flowers:
+                return None
+            
+            n += 1
+
+        resize_image(image,size,size)
+        
+        return Flower(image,coordinates, size)
+
+def random_cordinates(area,size,other_flowers):
     
     half_size=size//2 +1
-
     
     n_loop = 0
     overlap = True
@@ -96,19 +125,27 @@ def random_cordinates(area,size,other_flower):
         coordinates = (random.randint(area[0][0]+half_size,area[1][0]-half_size),
                     random.randint(area[0][1]+half_size,area[1][1]-half_size))
 
-        overlap = check_overlap(coordinates,size,other_flower)
+        overlap = check_overlap(coordinates,size,other_flowers)
         
-        if n_loop == 1000: raise Exception("I fiori sono troppo grandi o la quantita in ogni zona è troppo elevata")
-        n_loop+=1
+        # print(overlap)
+
+        if n_loop == 1000:
+            # print(False)
+            return None
+        n_loop += 1
         
     return coordinates
 
+def compute_distance(point1, point2):
+    return math.dist(point1,point2)
 
-def check_overlap(coordinates,size,other_flower):
-    for flower in other_flower:
-        
-        if flower.overlap(coordinates,size):
+def check_overlap(coordinates,size,other_flowers):
+    other_half_size = size / 2
+    other_center = (coordinates[0] + other_half_size, coordinates[1] + other_half_size)
+    other_half_diagonal = 0.75 * size
+    
+    for flower in other_flowers:
+        if flower.overlap(other_center, other_half_diagonal):
             return True
     
     return False
-    
