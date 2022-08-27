@@ -14,7 +14,7 @@ def generate_images():
     
     flower_list = create_starting_flower()
 
-    image_utils.generate_animation(background,flower_list,4)
+    image_utils.generate_animation(background,flower_list,6)
     
 
 def create_starting_flower():

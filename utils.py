@@ -29,12 +29,13 @@ def generate_video(images_path,output_path,framerate=30):
     (
         ffmpeg
             .input(images_path, framerate=framerate )
-            .output(output_path, level ="3.0",
-                    **{'profile:v': "baseline"},
+            .output(output_path,
                     preset="slow" ,
+                    pix_fmt = "yuv420p",
+                    level="3.0",
+                    **{'profile:v': "baseline"},
                     **{"c:v" :"libx264"},
-                    **{"c:a" :"aac"},
-                    pix_fmt = "yuv420p")
+                    **{"c:a" :"aac"})
             .run(overwrite_output=True)
     )
 

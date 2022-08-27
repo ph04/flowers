@@ -1,4 +1,5 @@
 import math
+from queue import Empty
 from re import I
 from tokenize import Imagnumber
 from PIL import  ImageDraw
@@ -15,6 +16,10 @@ IMAGE_ZONES= [
 BORDER_WIDTH = 50
 
 IMAGE_NUMBER=0
+
+ANIMATION_STEP=2
+
+FPS=30
 
 def drowable_areas_new_image(image):
 
@@ -110,39 +115,42 @@ def drow_flower(background,flower):
 def generate_animation(background,flower_list,duration):
     global IMAGE_NUMBER
     
-    grow_flower_area,drop_flower_area = 0,1
+    grow_flower_area,drop_flower_area = -1,-1
     
-    # while grow_flower_area == drop_flower_area:
-    #     grow_flower_area = random.randint(0,len(flower_list)-1)
-    #     drop_flower_area = random.randint(0,len(flower_list)-1)
+    while grow_flower_area == drop_flower_area:
+        grow_flower_area = random.randint(0,len(flower_list)-1)
+        drop_flower_area = random.randint(0,len(flower_list)-1)
     
     
     grow_flower = flower_list[grow_flower_area].pop(0)
     drop_flower = flower_list[drop_flower_area].pop(0)
     
     new_bg = drow_flowers(background,flower_list)
+    
+    empty_frame = compute_empty_frame(grow_flower.size,drop_flower.size,duration)
 
     grow_flower_size = grow_flower.size
-    grow_step = 2
     grow_flower.size=0
     
-    drop_step = -2
-    
-    drow_flower(new_bg,drop_flower).save(f"images/{IMAGE_NUMBER}.png")
+    frame = drow_flower(new_bg,drop_flower)
+    frame.save(f"images/{IMAGE_NUMBER}.png")
     IMAGE_NUMBER+=1
 
 
     while grow_flower.size < grow_flower_size or drop_flower.size > 0:
-        print(f"Frame {IMAGE_NUMBER}")
+        print(f"Image {IMAGE_NUMBER}")
 
+        for _ in range(empty_frame):
+            frame.save(f"images/{IMAGE_NUMBER}.png")
+            IMAGE_NUMBER+=1
         
-        if grow_flower.size + grow_step < grow_flower_size: 
-            frame = flower_animation(new_bg,grow_flower,grow_step)
+        if grow_flower.size + ANIMATION_STEP < grow_flower_size: 
+            frame = flower_animation(new_bg,grow_flower,ANIMATION_STEP)
         else:
             grow_flower.set_size(grow_flower_size)
         
-        if drop_flower.size + drop_step > 0:
-            frame = flower_animation(frame,drop_flower,drop_step)
+        if drop_flower.size -ANIMATION_STEP > 0:
+            frame = flower_animation(frame,drop_flower,-ANIMATION_STEP)
             
         else:
             drop_flower.size = 0
@@ -151,10 +159,23 @@ def generate_animation(background,flower_list,duration):
         frame.save(f"images/{IMAGE_NUMBER}.png")
         IMAGE_NUMBER+=1
         
-            
-    
 
 def flower_animation(background,flower,step):
     flower.change(step)
     new_bg= drow_flower(background,flower)
     return new_bg
+
+def compute_empty_frame(size1,size2,duration):
+    max_size= max(size1,size2)
+
+    animation_frame = max_size // ANIMATION_STEP
+
+    duration_frame =  duration * FPS
+
+    duration_diff= duration_frame - animation_frame 
+
+    empty_frame = duration_diff // animation_frame
+    return empty_frame
+    
+    
+    
