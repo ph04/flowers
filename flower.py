@@ -4,12 +4,14 @@ import random
 import utils
 
 
-IMAGE_LIST=[Image.open("assets/Flower "+ color +".png") for color in ["Blue","Orange","Pink","Purple","Red"]]
+IMAGE_LIST=[(Image.open("assets/Flower "+ color +".png"),color) for color in ["Blue","Orange","Pink","Purple","Red"]]
 background = Image.open("assets/BG2.png")
 
 class Flower:
-    def __init__(self, image, position, size):
-        self.image = image
+    def __init__(self, position, size):
+        self.original_image = None
+        self.image = None
+        self.image_name = None
         self.position = position
         self.size = size
         self_half_size = self.size / 2
@@ -25,14 +27,24 @@ class Flower:
         return distance <= self.half_diagonal + other_half_diagonal 
     
     def chose_image(self):
-        image = random.choice(IMAGE_LIST)
-        self.image=image
+        img = random.choice(IMAGE_LIST)
+        self.original_image=img[0]
+        self.image_name=[1]
         self.resize_image()
             
-    
-    def resize_image(self):
-        utils.resize_image(self.image,self.size,self.size)
+    def set_size(self,size):
+        self.size=size
+        self.resize_image()
         
-
+    def resize_image(self):
+        self.image = utils.resize_new_image(self.original_image,self.size,self.size)
+        
+    def change(self,step):
+        self.set_size(self.size+step)
+        self.change_position(-step//2)
+        
+    def change_position(self,step):
+        self.position=(self.position[0]+step,self.position[1]+step)
+    
     def __repr__(self) -> str:
-        return f"Flower"
+        return f"{self.image_name}"

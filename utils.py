@@ -28,8 +28,13 @@ def rotate_new_image(image, degree):
 def generate_video(images_path,output_path,framerate=30):
     (
         ffmpeg
-            .input(images_path, framerate=framerate)
-            .output(output_path)
+            .input(images_path, framerate=framerate )
+            .output(output_path, level ="3.0",
+                    **{'profile:v': "baseline"},
+                    preset="slow" ,
+                    **{"c:v" :"libx264"},
+                    **{"c:a" :"aac"},
+                    pix_fmt = "yuv420p")
             .run(overwrite_output=True)
     )
 
