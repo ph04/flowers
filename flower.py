@@ -1,11 +1,12 @@
 import copy
 from PIL import Image
 import random
-import utils
+from utils import *
 
 
-IMAGE_LIST=[(Image.open("assets/Flower "+ color +".png"),color) for color in ["Blue","Orange","Pink","Purple","Red"]]
-background = Image.open("assets/BG2.png")
+IMAGE_NAME={"Blue","Orange","Pink","Purple","Red"}
+IMAGE_DICT={color : Image.open("assets/Flower "+ color +".png") for color in IMAGE_NAME}
+
 
 class Flower:
     def __init__(self, position, size):
@@ -21,23 +22,26 @@ class Flower:
         # self.half_diagonal = 0,707106781185 * self.size
         
     def overlap(self, other_center, other_half_diagonal):
-        distance = utils.compute_distance(self.center, other_center)
+        distance = compute_distance(self.center, other_center)
 
         # print(distance,self.half_diagonal + other_half_diagonal)
         return distance <= self.half_diagonal + other_half_diagonal 
     
-    def chose_image(self):
-        img = random.choice(IMAGE_LIST)
-        self.original_image=img[0]
-        self.image_name=[1]
-        self.resize_image()
+    def chose_image(self,color_set):
+
+        name= random.choice(list(IMAGE_NAME-color_set))
             
+        self.original_image= IMAGE_DICT[name]
+        self.image_name= name
+        self.resize_image()
+        return self.image_name
+    
     def set_size(self,size):
         self.size=size
         self.resize_image()
-        
+    
     def resize_image(self):
-        self.image = utils.resize_new_image(self.original_image,self.size,self.size)
+        self.image = resize_new_image(self.original_image,self.size,self.size)
         
     def change(self,step):
         self.set_size(self.size+step)

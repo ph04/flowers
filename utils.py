@@ -4,7 +4,19 @@ from PIL import Image
 from copy import deepcopy
 from os import remove
 from glob import glob
+import time
 
+
+def timer(decimal=1):
+    def decoratorfunction(f):
+        def wrap(*args, **kwargs):
+            time1 = time.monotonic()
+            result = f(*args, **kwargs)
+            time2 = time.monotonic()
+            print('{:s} : {:.{}f} ms'.format(f.__name__, ((time2-time1)*1000.0), decimal ))
+            return result
+        return wrap
+    return decoratorfunction
 
 def resize_image(image, new_width, new_height):
     image.thumbnail((new_width, new_height), Image.ANTIALIAS)
